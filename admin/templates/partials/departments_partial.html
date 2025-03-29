@@ -1,0 +1,265 @@
+<h2>Manage Departments</h2>
+
+<!-- Form to Add a New Department -->
+<h3>Add Department</h3>
+<div class="form-container">
+    <form id="addDepartmentForm">
+        <input type="text" id="deptName" name="dept_name" placeholder="Department Name" required>
+        <input type="text" id="deptCode" name="dept_code" placeholder="Department Code" required>
+        <button type="button" onclick="submitDeptForm()">Add Department</button>
+    </form>
+</div>
+
+
+
+<!-- List of Existing Departments -->
+<!-- List of Existing Departments -->
+<ul id="departmentList">
+    {% for department in departments %}
+        <li class="department-box">
+            <div class="department-info">
+                <div class="department-name">
+                    <span>Name:</span>
+                    <span id="deptName-{{ department._id }}">{{ department.dept_name }}</span>
+                </div>
+                <div class="department-code">
+                    <span>Code:</span>
+                    <span id="deptCode-{{ department._id }}">{{ department.dept_code }}</span>
+                </div>
+            </div>
+            <div class="department-actions">
+                <button onclick="editDepartment('{{ department._id }}')">Edit</button>
+                <button onclick="deleteDepartment('{{ department._id }}')">Delete</button>
+            </div>
+        </li>
+    {% endfor %}
+</ul>
+<script src="{{ url_for('static', filename='dp.js') }}"></script>
+
+<style>
+    /* Message Container */
+#message-container {
+    margin: 20px auto;
+    max-width: 800px;
+    width: 90%;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.alert-success {
+    background-color: #4CAF50;
+    color: white;
+    border-left: 4px solid #388E3C;
+}
+
+.alert-error {
+    background-color: #f44336;
+    color: white;
+    border-left: 4px solid #D32F2F;
+}
+
+/* Form Styling */
+.form-container {
+    background: #3a3a3a;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin: 30px auto;
+    max-width: 500px;
+    width: 90%;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.form-row {
+    margin-bottom: 20px;
+}
+
+#addDepartmentForm label {
+    display: block;
+    margin-bottom: 8px;
+    color: #cccccc;
+    font-size: 0.95rem;
+}
+
+#addDepartmentForm input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #555;
+    border-radius: 6px;
+    background: #2a2a2a;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+#addDepartmentForm input:focus {
+    border-color: #44a3d2;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(68, 163, 210, 0.2);
+}
+
+#addDepartmentForm button {
+    width: 100%;
+    background: linear-gradient(135deg, #44a3d2, #1e588c);
+    color: white;
+    border: none;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    letter-spacing: 0.5px;
+}
+
+#addDepartmentForm button:hover {
+    background: linear-gradient(135deg, #1e588c, #44a3d2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Department List Styling */
+.list-container {
+    max-width: 800px;
+    width: 90%;
+    margin: 30px auto;
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    color: white;
+}
+
+#departmentList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 15px;
+}
+
+.department-box {
+    background: #3a3a3a;
+    padding: 18px 20px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    border-left: 4px solid #44a3d2;
+}
+
+.department-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.department-info {
+    display: grid;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.department-name,
+.department-code {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.department-name span:first-child,
+.department-code span:first-child {
+    font-weight: 600;
+    color: #44a3d2;
+    min-width: 100px;
+}
+
+.department-name span:last-child,
+.department-code span:last-child {
+    color: #e0e0e0;
+    font-size: 1rem;
+}
+
+.department-actions {
+    display: flex;
+    gap: 12px;
+    margin-left: 20px;
+}
+
+.department-actions button {
+    padding: 8px 14px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;
+    text-align: center;
+}
+
+.department-actions button:first-child {
+    background: #44a3d2;
+}
+
+.department-actions button:first-child:hover {
+    background: #1e588c;
+}
+
+.department-actions button:last-child {
+    background: #ff4b2b;
+}
+
+.department-actions button:last-child:hover {
+    background: #d1402a;
+    transform: translateY(-1px);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .department-box {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .department-actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .department-name,
+    .department-code {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .department-name span:first-child,
+    .department-code span:first-child {
+        min-width: auto;
+    }
+}
+</style>
+
+

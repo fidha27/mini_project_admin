@@ -1,0 +1,172 @@
+/* General Styles for All Sections */
+h2 {
+    color: #44a3d2;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+h3 {
+    color: #44a3d2;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+form {
+    background: #292929;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #ddd;
+    font-size: 1rem;
+}
+
+input[type="text"],
+input[type="file"],
+select {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background: #3a3a3a;
+    color: white;
+    margin-bottom: 15px;
+}
+
+button {
+    background: linear-gradient(90deg, #44a3d2, #1e588c);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: linear-gradient(90deg, #ff4b2b, #ff416c);
+}
+
+/* Manage Departments Section */
+#addDepartmentForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#departmentList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#departmentList li {
+    background: #3a3a3a;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#departmentList li span {
+    color: #ddd;
+    font-size: 1rem;
+}
+
+#departmentList li button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+
+/* Manage Faculty Section */
+#facultyList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#facultyList li {
+    background: #3a3a3a;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#facultyList li span {
+    color: #ddd;
+    font-size: 1rem;
+}
+
+#facultyList li button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+
+#addFacultyForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#facultyCsvUpload {
+    margin-bottom: 15px;
+}
+
+/* Assign HoD Section */
+#departmentSelect {
+    margin-bottom: 20px;
+}
+
+#currentHod {
+    color: #44a3d2;
+    font-weight: bold;
+}
+
+#facultyList li button[disabled] {
+    background: #555;
+    cursor: not-allowed;
+}
+
+#facultyList li button[disabled]:hover {
+    background: #555;
+}
+
+/* Alerts and Messages */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    color: white;
+}
+
+.alert-success {
+    background-color: #4CAF50; /* Green */
+}
+
+.alert-error {
+    background-color: #f44336; /* Red */
+}
+
+/* Links */
+a {
+    color: #44a3d2;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: #ff4b2b;
+}

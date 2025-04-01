@@ -1,0 +1,337 @@
+<h2>Manage Faculty</h2>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div id="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<!-- Search Faculty by Department -->
+<div class="form-container">
+    <label for="departmentSearch">Select Department:</label>
+    <select id="departmentSearch" onchange="fetchFaculty()">
+        <option value="">-- Select Department --</option>
+        {% for dept in departments %}
+            <option value="{{ dept.dept_code }}">{{ dept.dept_code }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<!-- Faculty List -->
+<h3>Faculty List</h3>
+<ul id="facultyList">
+    {% for faculty in faculty_list %}
+        <li data-id="{{ faculty._id }}">
+            <span class="faculty-name">{{ faculty.name }}</span> 
+            <span class="faculty-pen-no">{{ faculty.pen_no }}</span>
+            <span class="faculty-dept-code">{{ faculty.dept_code }}</span>
+            <span class="faculty-designation">{{ faculty.designation }}</span>
+
+            <div class="actions">
+                <button onclick="editFaculty('{{ faculty._id }}')">Edit</button>
+                <button onclick="deleteFaculty('{{ faculty._id }}')">Delete</button>
+                <button onclick="generatePassword('{{ faculty._id }}')">Generate Password</button>
+            </div>
+        </li>
+    {% endfor %}
+</ul>
+
+<!-- Overlay for the modal -->
+<div id="modalOverlay"></div>
+
+<!-- Edit Faculty Modal -->
+<div id="editFacultyModal">
+    <h3>Edit Faculty Details</h3>
+    <input type="hidden" id="editFacultyId">
+    <label>Name: <input type="text" id="editName"></label><br>
+    <label>Pen No: <input type="text" id="editPenNo"></label><br>
+    <label>Department Code: <input type="text" id="editDeptCode"></label><br>
+    <label>Designation: <input type="text" id="editDesignation"></label><br>
+    <button onclick="updateFaculty()">Save</button>
+    <button onclick="closeEditModal()">Cancel</button>
+</div>
+
+
+<!-- Manually Add Faculty -->
+<h3>Add Faculty</h3>
+<div class="form-container">
+    <form id="addFacultyForm" method="POST" action="/add_faculty">
+        <input type="text" id="facultyName" name="name" placeholder="Name" required>
+        <input type="text" id="penNo" name="pen_no" placeholder="PEN Number" required>
+        <select id="facultyDepartment" name="department" required>
+            <option value="">-- Select Department --</option>
+            {% for dept in departments %}
+                <option value="{{ dept.dept_code }}">{{ dept.dept_code }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" id="designation" name="designation" placeholder="Designation" required>
+        <button type="button" onclick="submitFacultyForm()">Add Faculty</button>
+    </form>
+</div>
+
+<!-- Upload Faculty via CSV -->
+<h3>Upload Faculty CSV</h3>
+<div class="form-container">
+    <a href="/download_faculty_template" download class="button">Download CSV Template</a>
+    <input type="file" id="facultyCsvUpload">
+    <button onclick="uploadFacultyCsv()">Upload</button>
+</div>
+
+<!-- Generate Passwords -->
+<h3>Generate Passwords</h3>
+<div class="form-container">
+    <button onclick="generateAllPasswords()">Generate for All</button>
+    <a href="/download_faculty_list?format=csv" class="button">Download CSV</a>
+    <a href="/download_faculty_list?format=pdf" class="button">Download PDF</a>
+</div>
+<script src="{{ url_for('static', filename='fp.js') }}"></script>
+
+<style>
+    /* General Styles for All Sections */
+h2 {
+    color: #44a3d2;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+h3 {
+    color: #44a3d2;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+.form-container {
+    background: #292929;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #ddd;
+    font-size: 1rem;
+}
+
+input[type="text"],
+select {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background: #3a3a3a;
+    color: white;
+    margin-bottom: 15px;
+}
+
+button {
+    background: linear-gradient(90deg, #44a3d2, #1e588c);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: linear-gradient(90deg, #ff4b2b, #ff416c);
+}
+
+.button {
+    background: linear-gradient(90deg, #44a3d2, #1e588c);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 10px;
+    transition: background 0.3s;
+}
+
+.button:hover {
+    background: linear-gradient(90deg, #ff4b2b, #ff416c);
+}
+
+/* Faculty List Styling */
+#facultyList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#facultyList li {
+    background: #3a3a3a;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#facultyList li span {
+    color: #ddd;
+    font-size: 1rem;
+}
+
+#facultyList li .actions {
+    display: flex;
+    gap: 10px;
+}
+
+#facultyList li button {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+
+/* Flash Messages Styling */
+#flash-messages {
+    margin-bottom: 20px;
+}
+
+.alert {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.alert-success {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.alert-error {
+    background-color: #f44336;
+    color: white;
+}
+
+/* Edit Faculty Modal Styles */
+#editFacultyModal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #292929; /* Dark background to match the theme */
+    padding: 20px;
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+    z-index: 1000; /* Ensure it appears above other content */
+    width: 90%;
+    max-width: 400px; /* Limit width for better readability */
+    color: #ddd; /* Light text color */
+}
+
+#editFacultyModal h3 {
+    color: #44a3d2; /* Matching the heading color */
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+#editFacultyModal label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #ddd;
+}
+
+#editFacultyModal input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background: #3a3a3a; /* Dark input background */
+    color: white;
+    margin-top: 5px;
+}
+
+#editFacultyModal input[type="text"]:focus {
+    border-color: #44a3d2; /* Highlight input on focus */
+    outline: none;
+}
+
+#editFacultyModal button {
+    background: linear-gradient(90deg, #44a3d2, #1e588c); /* Gradient button */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-right: 10px;
+}
+
+#editFacultyModal button:hover {
+    background: linear-gradient(90deg, #ff4b2b, #ff416c); /* Hover effect */
+}
+
+#editFacultyModal button:last-child {
+    background: #555; /* Cancel button style */
+}
+
+#editFacultyModal button:last-child:hover {
+    background: #777; /* Cancel button hover effect */
+}
+
+/* Overlay for the modal */
+#modalOverlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
+    z-index: 999; /* Below the modal but above other content */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-container {
+        padding: 10px;
+    }
+
+    input[type="text"],
+    select {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    button {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+
+    .button {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+
+    #facultyList li {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    #facultyList li .actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+</style>
+
+

@@ -1,0 +1,255 @@
+<h2>Assign HoD</h2>
+
+<!-- Select Department -->
+<div class="form-container">
+    <label for="departmentSelect">Select Department:</label>
+    <select id="departmentSelect" onchange="fetchFaculty()">
+        <option value="">-- Select Department --</option>
+        {% for dept in departments %}
+            <option value="{{ dept.dept_code }}">{{ dept.dept_name }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<!-- Faculty List for Selected Department -->
+<h3>Faculty in Selected Department</h3>
+<div class="table-container">
+    <table id="facultyTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Pen No</th>
+                <th>Designation</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- Current HoD Table -->
+<h3>Current HoDs</h3>
+<div class="table-container">
+    <table id="hodTable">
+        <thead>
+            <tr>
+                <th>Department</th>
+                <th>HoD Name</th>
+                <th>Pen No</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="hodTableBody">
+            {% for dept in departments %}
+            <tr>
+                <td>{{ dept.dept_name }}</td>
+                <td id="hod_{{ dept.dept_code }}">{{ dept.hod.name if dept.hod else "None" }}</td>
+                <td id="hod_pen_{{ dept.dept_code }}">{{ dept.hod.pen_no if dept.hod else "-" }}</td>
+                <td>
+                    {% if dept.hod %}
+                    <button onclick="removeHod('{{ dept.dept_code }}')">Remove HoD</button>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<style>
+    /* General Styles for All Sections */
+h2 {
+    color: #44a3d2;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+h3 {
+    color: #44a3d2;
+    margin-bottom: 15px;
+    font-size: 1.4rem;
+}
+
+.form-container {
+    background: #292929;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #ddd;
+    font-size: 1rem;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background: #3a3a3a;
+    color: white;
+    margin-bottom: 15px;
+}
+
+button {
+    background: linear-gradient(90deg, #44a3d2, #1e588c);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: linear-gradient(90deg, #ff4b2b, #ff416c);
+}
+
+button:disabled {
+    background: #555;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    background: #555;
+}
+
+/* Table Styles */
+.table-container {
+    background: #292929;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #ddd;
+}
+
+table th,
+table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #555;
+}
+
+table th {
+    background: #1e588c;
+    color: white;
+}
+
+table tr:hover {
+    background: #3a3a3a;
+}
+
+table button {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    margin-right: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .table-container {
+        padding: 10px;
+    }
+
+    table th,
+    table td {
+        padding: 8px;
+    }
+
+    button {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+}
+</style>
+<script>
+function fetchFaculty() {
+    let department = document.getElementById("departmentSelect").value;
+    let facultyTableBody = document.querySelector("#facultyTable tbody");
+
+    if (!department) {
+        facultyTableBody.innerHTML = "";
+        return;
+    }
+
+    fetch(`/get_faculty_hod?department=${department}`)
+    .then(response => response.json())
+    .then(data => {
+        facultyTableBody.innerHTML = "";
+        data.faculty.forEach(faculty => {
+            let isHod = data.current_hod && data.current_hod.pen_no === faculty.pen_no;
+            facultyTableBody.innerHTML += `
+                <tr>
+                    <td>${faculty.name}</td>
+                    <td>${faculty.pen_no}</td>
+                    <td>${faculty.designation}</td>
+                    <td>
+                        <button onclick="assignHod('${faculty.pen_no}', '${department}')" ${isHod ? 'disabled' : ''}>
+                            Assign as HoD
+                        </button>
+                        ${isHod ? `<button onclick="removeHod('${department}')">Remove HoD</button>` : ''}
+                    </td>
+                </tr>`;
+        });
+    });
+}
+
+function assignHod(pen_no, department) {
+    console.log("Assigning HoD:", { pen_no, department });
+    fetch('/assign_hod', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pen_no, department })
+    }).then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        fetchFaculty();
+        updateHodTable();
+    });
+}
+
+function removeHod(department) {
+    fetch('/remove_hod', {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ department })
+    }).then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        fetchFaculty();
+        updateHodTable();
+    });
+}
+
+function updateHodTable() {
+    fetch(`/get_hods`)
+    .then(response => response.json())
+    .then(data => {
+        let hodTableBody = document.getElementById("hodTableBody");
+        hodTableBody.innerHTML = "";
+        data.forEach(dept => {
+            hodTableBody.innerHTML += `
+                <tr>
+                    <td>${dept.dept_name}</td>
+                    <td id="hod_${dept.dept_code}">${dept.hod ? dept.hod.name : "None"}</td>
+                    <td id="hod_pen_${dept.dept_code}">${dept.hod ? dept.hod.pen_no : "-"}</td>
+                    <td>
+                        ${dept.hod ? `<button onclick="removeHod('${dept.dept_code}')">Remove HoD</button>` : "-"}
+                    </td>
+                </tr>`;
+        });
+    });
+}
+</script>
